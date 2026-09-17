@@ -39,14 +39,14 @@ public class AuthService {
         }
 
         // Check if username already exists
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByname(request.getName())) {
             throw new RuntimeException("Username already exists");
         }
 
         // Create user
         User user = new User();
 
-        user.setName(request.getUsername());
+        user.setName(request.getName());
         user.setEmail(request.getEmail());
 
         // Hash + salt password
