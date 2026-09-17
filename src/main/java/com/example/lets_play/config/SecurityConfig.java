@@ -24,12 +24,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/products/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/products/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/products/**").permitAll());
+                        .requestMatchers("/swagger-ui/index.html#/auth-controller/createUser").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated())
+                .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.sendError(401, "Unauthorized");
+                })
+                );
 
         return http.build();
     }
