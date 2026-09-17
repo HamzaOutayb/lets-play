@@ -1,19 +1,15 @@
 package com.example.lets_play.service;
 
-import java.util.List;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.lets_play.dto.AuthResponse;
-import com.example.lets_play.dto.ProductRequest;
+import com.example.lets_play.dto.Loginrequest;
 import com.example.lets_play.dto.Registe;
-import com.example.lets_play.exception.ResourceNotFoundException;
-import com.example.lets_play.model.Product;
 import com.example.lets_play.model.Role;
 import com.example.lets_play.model.User;
-import com.example.lets_play.repository.ProductRepository;
 import com.example.lets_play.repository.UserRepository;
 import com.example.lets_play.security.JwtService;
+
 @Service
 public class AuthService {
 
@@ -68,6 +64,28 @@ public class AuthService {
             token,
             savedUser.getName(),
             savedUser.getRole()
+        );
+    }
+
+    public AuthResponse login(Loginrequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(
+                token,
+                user.getName(),
+                user.getRole()
         );
     }
 }
