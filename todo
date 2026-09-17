@@ -1,4 +1,4 @@
-add login
-product cruds all need be authenticated yours or you are an admin expet for get products
+add login doneeeeeeee
+product cruds all need be authenticated yours or you are an admin expet for get products / working on
 other cruds using users and admin
 delete this after u finish .requestMatchers("/swagger-ui/index.html#/auth-controller/createUser").permitAll()
