@@ -6,6 +6,7 @@ import com.example.lets_play.service.ProductService;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Product createProduct(@RequestBody ProductRequest product) {
+    public Product createProduct(@Valid @RequestBody ProductRequest product) {
         return productService.createProduct(product);
     }
 
