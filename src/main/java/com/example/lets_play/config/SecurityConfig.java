@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -21,7 +22,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -29,9 +30,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/Auths/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/Auths/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated())
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.sendError(401, "Unauthorized");
