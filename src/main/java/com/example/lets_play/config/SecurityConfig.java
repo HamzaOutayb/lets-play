@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableMethodSecurity
@@ -23,25 +24,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
-
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/Auths/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/Auths/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/User/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/User/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/User/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/User/**").hasAuthority("ADMIN")
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            System.out.println("AUTH ERROR: " + authException.getMessage());
-                            response.sendError(401, "Unauthorized");
-                        }));
+        http.csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, "/api/Auths/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/Auths/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/User/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/User/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/User/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/User/**").hasAuthority("ADMIN")
+                .anyRequest().authenticated())
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write(
+                        "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\",\"path\":\""
+                        + request.getRequestURI() + "\"}");
+                })
+                );
 
         return http.build();
     }

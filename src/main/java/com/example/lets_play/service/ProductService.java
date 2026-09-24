@@ -1,6 +1,7 @@
 package com.example.lets_play.service;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
@@ -24,46 +25,94 @@ public class ProductService {
     }
 
     public Product getProductById(String id) {
+
         return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Product not found with id: " + id
+                        ));
     }
 
-    public Product updateProduct(String id, Product product, String userId, String Role) {
+    public Product updateProduct(
+            String id,
+            Product product,
+            String userId,
+            String role) {
+
         Product existingProduct = getProductById(id);
-        if (!existingProduct.getUserId().equals(userId) && !Role.equals("ADMIN")) {
-            throw new ResourceNotFoundException("You are not authorized to update this product.");
+
+        boolean isOwner =
+                Objects.equals(existingProduct.getUserId(), userId);
+
+        boolean isAdmin =
+                "ADMIN".equals(role);
+
+        if (!isOwner && !isAdmin) {
+            throw new ForbiddenException(
+                    "You are not authorized to update this product."
+            );
         }
+
         if (product.getName() != null) {
-            existingProduct.setName(product.getName().trim());
+            existingProduct.setName(
+                    product.getName().trim()
+            );
         }
+
         if (product.getDescription() != null) {
-            existingProduct.setDescription(product.getDescription().trim());
+            existingProduct.setDescription(
+                    product.getDescription().trim()
+            );
         }
-        existingProduct.setPrice(product.getPrice());
+
+        if (product.getPrice() >= 0) {
+            existingProduct.setPrice(product.getPrice());
+        }
 
         return productRepository.save(existingProduct);
     }
 
-    public void deleteProduct(String id, String userId, String Role) {
+    public void deleteProduct(
+            String id,
+            String userId,
+            String role) {
+
         Product existingProduct = getProductById(id);
 
-        if (!existingProduct.getUserId().equals(userId) && !Role.equals("ADMIN")) {
+        boolean isOwner =
+                Objects.equals(existingProduct.getUserId(), userId);
+
+        boolean isAdmin =
+                "ADMIN".equals(role);
+
+        if (!isOwner && !isAdmin) {
             throw new ForbiddenException(
-                    "You can't modify this product because it isn't yours.");
+                    "You are not authorized to delete this product."
+            );
         }
+
         productRepository.delete(existingProduct);
     }
 
-    public Product createProduct(ProductRequest request, String userId) {
-        Product product = new Product();
-        if (request.getName() != null) {
-            product.setName(request.getName().trim());
-        }
-        if (request.getDescription() != null) {
-            product.setDescription(request.getDescription().trim());
-        }
-        product.setUserId(userId);
+    public Product createProduct(
+            ProductRequest request,
+            String userId) {
 
+        Product product = new Product();
+
+        if (request.getName() != null) {
+            product.setName(
+                    request.getName().trim()
+            );
+        }
+
+        if (request.getDescription() != null) {
+            product.setDescription(
+                    request.getDescription().trim()
+            );
+        }
+
+        product.setUserId(userId);
         product.setPrice(request.getPrice());
 
         return productRepository.save(product);

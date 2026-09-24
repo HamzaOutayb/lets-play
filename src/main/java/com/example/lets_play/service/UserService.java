@@ -2,6 +2,7 @@ package com.example.lets_play.service;
 
 import com.example.lets_play.dto.UserInfo;
 import com.example.lets_play.dto.UserResponse;
+import com.example.lets_play.exception.ResourceNotFoundException;
 import com.example.lets_play.model.User;
 import com.example.lets_play.repository.UserRepository;
 
@@ -16,7 +17,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -27,7 +31,9 @@ public class UserService {
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
 
         return userRepository.save(user);
     }
@@ -40,39 +46,66 @@ public class UserService {
                         user.getId(),
                         user.getName(),
                         user.getEmail(),
-                        user.getRole().name()))
+                        user.getRole() != null
+                                ? user.getRole().name()
+                                : null
+                ))
                 .toList();
     }
 
     public UserResponse getUserByIdWithoutPassword(String id) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getUserById(id);
 
         return new UserResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole().name());
+                user.getRole() != null
+                        ? user.getRole().name()
+                        : null
+        );
     }
 
     public User getUserById(String id) {
 
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found with id: " + id
+                        ));
     }
 
-    public User updateUser(String id, User updatedUser) {
+    public User updateUser(
+            String id,
+            User updatedUser) {
 
         User existingUser = getUserById(id);
-        if (updatedUser.getName() != null && !updatedUser.getName().isEmpty()) {
-            existingUser.setName(updatedUser.getName());
+
+        if (updatedUser.getName() != null &&
+                !updatedUser.getName().isBlank()) {
+
+            existingUser.setName(
+                    updatedUser.getName().trim()
+            );
         }
-        if (updatedUser.getEmail() != null && !updatedUser.getEmail().isEmpty()) {
-            existingUser.setEmail(updatedUser.getEmail());
+
+        if (updatedUser.getEmail() != null &&
+                !updatedUser.getEmail().isBlank()) {
+
+            existingUser.setEmail(
+                    updatedUser.getEmail().trim().toLowerCase()
+            );
         }
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+
+        if (updatedUser.getPassword() != null &&
+                !updatedUser.getPassword().isBlank()) {
+
+            existingUser.setPassword(
+                    passwordEncoder.encode(
+                            updatedUser.getPassword()
+                    )
+            );
         }
 
         return userRepository.save(existingUser);

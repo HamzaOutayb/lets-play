@@ -2,9 +2,12 @@ package com.example.lets_play.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.example.lets_play.dto.AuthResponse;
 import com.example.lets_play.dto.Loginrequest;
 import com.example.lets_play.dto.Registe;
+import com.example.lets_play.exception.ConflictException;
+import com.example.lets_play.exception.BadRequestException;
 import com.example.lets_play.model.Role;
 import com.example.lets_play.model.User;
 import com.example.lets_play.repository.UserRepository;
@@ -29,55 +32,70 @@ public class AuthService {
 
     public AuthResponse createUser(Registe request) {
 
-        // Check if email already exists
+        if (request.getEmail() == null ||
+                request.getEmail().isBlank()) {
+
+            throw new BadRequestException("Email is required.");
+        }
+
+        if (request.getName() == null ||
+                request.getName().isBlank()) {
+
+            throw new BadRequestException("Username is required.");
+        }
+
+        if (request.getPassword() == null ||
+                request.getPassword().isBlank()) {
+
+            throw new BadRequestException("Password is required.");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Email already exists.");
         }
 
-        // Check if username already exists
         if (userRepository.existsByname(request.getName())) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("Username already exists.");
         }
 
-        // Create user
         User user = new User();
 
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        user.setName(request.getName().trim());
+        user.setEmail(request.getEmail().trim().toLowerCase());
 
-        // Hash + salt password
         user.setPassword(
-            passwordEncoder.encode(request.getPassword())
+                passwordEncoder.encode(request.getPassword())
         );
 
-        // New registrations are always USER
         user.setRole(Role.USER);
 
-        // Save user
         User savedUser = userRepository.save(user);
 
-        // Generate JWT
         String token = jwtService.generateToken(savedUser);
 
-        // Return safe response
         return new AuthResponse(
-            token,
-            savedUser.getName(),
-            savedUser.getRole()
+                token,
+                savedUser.getName(),
+                savedUser.getRole()
         );
     }
 
     public AuthResponse login(Loginrequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository
+                .findByEmail(request.getEmail())
                 .orElseThrow(() ->
-                        new RuntimeException("Invalid email or password"));
+                        new BadRequestException(
+                                "Invalid email or password."
+                        ));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
-            throw new RuntimeException("Invalid email or password");
+            throw new BadRequestException(
+                    "Invalid email or password."
+            );
         }
 
         String token = jwtService.generateToken(user);
