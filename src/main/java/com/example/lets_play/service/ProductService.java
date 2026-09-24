@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.lets_play.dto.ProductRequest;
+import com.example.lets_play.exception.ForbiddenException;
 import com.example.lets_play.exception.ResourceNotFoundException;
 import com.example.lets_play.model.Product;
 import com.example.lets_play.repository.ProductRepository;
@@ -27,9 +28,11 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
-    public Product updateProduct(String id, Product product) {
+    public Product updateProduct(String id, Product product, String userId, String Role) {
         Product existingProduct = getProductById(id);
-
+        if (!existingProduct.getUserId().equals(userId) && !Role.equals("ADMIN")) {
+            throw new ResourceNotFoundException("You are not authorized to update this product.");
+        }
         if (product.getName() != null) {
             existingProduct.setName(product.getName().trim());
         }
@@ -41,26 +44,17 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
-    public Product updateProduct(String id, ProductRequest request) {
+    public void deleteProduct(String id, String userId, String Role) {
         Product existingProduct = getProductById(id);
 
-        if (request.getName() != null) {
-            existingProduct.setName(request.getName().trim());
+        if (!existingProduct.getUserId().equals(userId) && !Role.equals("ADMIN")) {
+            throw new ForbiddenException(
+                    "You can't modify this product because it isn't yours.");
         }
-        if (request.getDescription() != null) {
-            existingProduct.setDescription(request.getDescription().trim());
-        }
-        existingProduct.setPrice(request.getPrice());
-
-        return productRepository.save(existingProduct);
-    }
-
-    public void deleteProduct(String id) {
-        Product existingProduct = getProductById(id);
         productRepository.delete(existingProduct);
     }
 
-    public Product createProduct(ProductRequest request) {
+    public Product createProduct(ProductRequest request, String userId) {
         Product product = new Product();
         if (request.getName() != null) {
             product.setName(request.getName().trim());
@@ -68,6 +62,8 @@ public class ProductService {
         if (request.getDescription() != null) {
             product.setDescription(request.getDescription().trim());
         }
+        product.setUserId(userId);
+
         product.setPrice(request.getPrice());
 
         return productRepository.save(product);

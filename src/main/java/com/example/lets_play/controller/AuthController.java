@@ -32,31 +32,6 @@ public class AuthController {
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse login(@Valid @RequestBody Loginrequest Auth) {
-        System.out.println("Login request received: ++++++++++++++++++++++++++++++++++" + Auth);
         return AuthService.login(Auth);
     }
-
-    // @GetMapping
-    // @ResponseStatus(HttpStatus.OK)
-    // public List<Auth> getAllAuths() {
-    //     return AuthService.getAllAuths();
-    // }
-
-    // @GetMapping("/{id}")
-    // @ResponseStatus(HttpStatus.OK)
-    // public Auth getAuthById(@PathVariable String id) {
-    //     return AuthService.getAuthById(id);
-    // }
-
-    // @PutMapping("/{id}")
-    // @ResponseStatus(HttpStatus.OK)
-    // public Auth updateAuth(@PathVariable String id, @RequestBody Auth Auth) {
-    //     return AuthService.updateAuth(id, Auth);
-    // }
-
-    // @DeleteMapping("/{id}")
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // public void deleteAuth(@PathVariable String id) {
-    //     AuthService.deleteAuth(id);
-    // }
 }

@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -42,10 +41,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 // 1. Validate token first
                 if (jwtService.validateToken(token)) {
-                    System.out.println("🔥 JWT FILTER RUNNING: "
-                            + request.getMethod()
-                            + " "
-                            + request.getRequestURI());
                     String userId = jwtService.extractUserId(token);
                     String role = jwtService.extractRole(token);
 
