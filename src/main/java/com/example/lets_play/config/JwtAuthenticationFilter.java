@@ -11,56 +11,65 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.lets_play.dto.Userinfo;
-import io.micrometer.common.lang.NonNull;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.example.lets_play.security.JwtService;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    public JwtAuthenticationFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
     }
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
-
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
+
             String token = header.substring(7);
 
-            String userId = jwtUtil.extractUserId(token);
-            String role = jwtUtil.extractRole(token);
+            try {
+                // 1. Validate token first
+                if (jwtService.validateToken(token)) {
+                    System.out.println("🔥 JWT FILTER RUNNING: "
+                            + request.getMethod()
+                            + " "
+                            + request.getRequestURI());
+                    String userId = jwtService.extractUserId(token);
+                    String role = jwtService.extractRole(token);
 
-            // Proceed only if token has valid userId and context is not already
-            // authenticated
-            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    if (userId != null && role != null &&
+                            SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                Userinfo userInfo = new Userinfo(userId, role);
+                        Userinfo userInfo = new Userinfo(userId, role);
 
-                // Validate the token before setting authentication
-                if (jwtUtil.validateToken(token)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userInfo,
-                            null,
-                            List.of(new SimpleGrantedAuthority(role)));
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userInfo,
+                                null,
+                                List.of(new SimpleGrantedAuthority(role)));
 
-                    // Set authentication details
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                        SecurityContextHolder.getContext()
+                                .setAuthentication(authToken);
+                    }
                 }
+
+            } catch (Exception e) {
+                System.out.println("JWT authentication failed: " + e.getMessage());
             }
         }
 
-        // Continue the request chain
+        // Continue to controller
         filterChain.doFilter(request, response);
     }
 }

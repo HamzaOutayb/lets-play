@@ -32,6 +32,7 @@ public class AuthController {
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse login(@Valid @RequestBody Loginrequest Auth) {
+        System.out.println("Login request received: ++++++++++++++++++++++++++++++++++" + Auth);
         return AuthService.login(Auth);
     }
 

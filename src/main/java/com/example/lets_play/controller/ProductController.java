@@ -22,6 +22,7 @@ public class ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Product createProduct(@Valid @RequestBody ProductRequest product) {
+        System.out.println("Create product request received: ++++++++++++++++++++++++++++++++++" + product);
         return productService.createProduct(product);
     }
 
