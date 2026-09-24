@@ -30,11 +30,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/Auths/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/Auths/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers(HttpMethod.GET, "/api/User/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/User/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/User/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/User/**").hasAuthority("ADMIN")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
+
                         .authenticationEntryPoint((request, response, authException) -> {
+                            System.out.println("AUTH ERROR: " + authException.getMessage());
                             response.sendError(401, "Unauthorized");
                         }));
 

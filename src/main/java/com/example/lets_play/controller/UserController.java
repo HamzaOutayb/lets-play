@@ -1,51 +1,49 @@
-// package com.example.lets_play.controller;
+package com.example.lets_play.controller;
 
-// import com.example.lets_play.dto.UserRequest;
-// import com.example.lets_play.model.User;
-// import com.example.lets_play.service.UserService;
+import com.example.lets_play.dto.UserInfo;
+import com.example.lets_play.dto.UserResponse;
+import com.example.lets_play.model.User;
+import com.example.lets_play.service.UserService;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
-// import java.util.List;
+@RestController
+@RequestMapping("api/User")
+public class UserController {
+    private final UserService userService;
 
-// import jakarta.validation.Valid;
-// import org.springframework.http.HttpStatus;
-// import org.springframework.web.bind.annotation.*;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-// @RestController
-// @RequestMapping("api/User")
-// public class UserController {
-//     private final UserService userService;
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public User createUser(@RequestBody UserInfo User) {
+        return userService.createUser(User);
+    }
 
-//     public UserController(UserService userService) {
-//         this.userService = userService;
-//     }
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserResponse> getAllUsers() {
+        return userService.getAllUsers();
+    }
 
-//     @PostMapping
-//     @ResponseStatus(HttpStatus.CREATED)
-//     public User createUser(@RequestBody UserRequest User) {
-//         return userService.createUser(User);
-//     }
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponse getUserById(@PathVariable String id) {
+        return userService.getUserByIdWithoutPassword(id);
+    }
 
-//     @GetMapping
-//     @ResponseStatus(HttpStatus.OK)
-//     public List<User> getAllUsers() {
-//         return userService.getAllUsers();
-//     }
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public User updateUser(@PathVariable String id, @RequestBody User User) {
+        return userService.updateUser(id, User);
+    }
 
-//     @GetMapping("/{id}")
-//     @ResponseStatus(HttpStatus.OK)
-//     public User getUserById(@PathVariable String id) {
-//         return userService.getUserById(id);
-//     }
-
-//     @PutMapping("/{id}")
-//     @ResponseStatus(HttpStatus.OK)
-//     public User updateUser(@PathVariable String id, @RequestBody User User) {
-//         return userService.updateUser(id, User);
-//     }
-
-//     @DeleteMapping("/{id}")
-//     @ResponseStatus(HttpStatus.NO_CONTENT)
-//     public void deleteUser(@PathVariable String id) {
-//         userService.deleteUser(id);
-//     }
-// }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+    }
+}
