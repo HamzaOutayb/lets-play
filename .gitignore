@@ -38,10 +38,11 @@ out/
 */application.properties
 .env
 data/
-*.p12
+
 .gradle/
 .vscode/
 build/    environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-      
+
+resources/localhost.p12
