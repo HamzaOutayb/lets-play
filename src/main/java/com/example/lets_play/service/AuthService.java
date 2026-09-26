@@ -1,5 +1,6 @@
 package com.example.lets_play.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    @Autowired
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
@@ -64,8 +66,7 @@ public class AuthService {
         user.setEmail(request.getEmail().trim().toLowerCase());
 
         user.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
+                passwordEncoder.encode(request.getPassword()));
 
         user.setRole(Role.USER);
 
@@ -76,26 +77,22 @@ public class AuthService {
         return new AuthResponse(
                 token,
                 savedUser.getName(),
-                savedUser.getRole()
-        );
+                savedUser.getRole());
     }
 
     public AuthResponse login(Loginrequest request) {
 
         User user = userRepository
                 .findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new BadRequestException(
-                                "Invalid email or password."
-                        ));
+                .orElseThrow(() -> new BadRequestException(
+                        "Invalid email or password."));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
             throw new BadRequestException(
-                    "Invalid email or password."
-            );
+                    "Invalid email or password.");
         }
 
         String token = jwtService.generateToken(user);
@@ -103,7 +100,6 @@ public class AuthService {
         return new AuthResponse(
                 token,
                 user.getName(),
-                user.getRole()
-        );
+                user.getRole());
     }
 }

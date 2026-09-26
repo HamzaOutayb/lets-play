@@ -9,16 +9,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor 
 @NoArgsConstructor
 public class Registe {
-
+    @NotNull
     @NotBlank
     @Size(min = 3, max = 50)
     private String name;
 
+    @NotNull
     @NotBlank
     @Email
     @Size(max = 255)
     private String email;
 
+    @NotNull
     @NotBlank
     @Size(min = 8, max = 100)
     private String password;

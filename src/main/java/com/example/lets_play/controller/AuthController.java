@@ -1,5 +1,6 @@
 package com.example.lets_play.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,11 +18,9 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("api/Auths")
 public class AuthController {
-    private final AuthService AuthService;
-
-    public AuthController(AuthService AuthService) {
-        this.AuthService = AuthService;
-    }
+    
+    @Autowired
+    private AuthService AuthService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)

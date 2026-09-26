@@ -6,6 +6,7 @@ import com.example.lets_play.exception.ResourceNotFoundException;
 import com.example.lets_play.model.User;
 import com.example.lets_play.repository.UserRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    
+    @Autowired
     public UserService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder) {

@@ -3,6 +3,7 @@ package com.example.lets_play.service;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.lets_play.dto.ProductRequest;
@@ -15,7 +16,8 @@ import com.example.lets_play.repository.ProductRepository;
 public class ProductService {
 
     private final ProductRepository productRepository;
-
+    
+    @Autowired
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }

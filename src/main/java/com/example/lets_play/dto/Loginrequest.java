@@ -5,16 +5,18 @@ import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor 
+@AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class Loginrequest {
-    @NotBlank 
-    @Email 
+    @NotNull
+    @NotBlank
+    @Email
     @Size(max = 255)
     private String email;
 
-    @NotBlank 
+    @NotNull
+    @NotBlank
     @Size(min = 8, max = 100)
     private String password;
 }
